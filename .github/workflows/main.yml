@@ -1,0 +1,29 @@
+Nom : Sauvegarde quotidienne SQLite
+
+sur :
+  calendrier :
+    - cron : " 0 2 * * * "  # tous les jours à 02:00 UTC
+  workflow_dispatch :
+
+emplois :
+  sauvegarde :
+    fonctionne sous : ubuntu-latest
+
+    étapes :
+      - nom : Dépôt de vérification
+        utilisations : actions/checkout@v3
+
+      # 🔹 Étape de débogage : vérifiez que le secret est bien lu
+      - nom : Clé de débogage
+        exécuter : |
+          echo "La clé est ${{ secrets.EXPORT_KEY }}"
+      # 🔹 Étape qui télécharge la DB
+      - nom : Télécharger la base de données SQLite
+        exécuter : |
+          curl -f "https://laturbine-leaderboard.up.railway.app/export/db?key=${{ secrets.EXPORT_KEY }}" -o scores.db
+      # 🔹 Étape pour sauvegarder comme artefact
+      - nom : Sauvegarde à télécharger
+        utilise : actions/upload-artifact@v4
+        avec :
+          nom : sqlite-backup
+          chemin : scores.db
